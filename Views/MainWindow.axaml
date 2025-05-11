@@ -23,6 +23,10 @@
         </StackPanel>
 
         <Button Content="Criar" Width="120" HorizontalAlignment="Center" Click="CriarButton_Click"/>
+        <TextBox
+            Name="ResulTextBox"
+            IsReadOnly="True"
+            />
 
     </StackPanel>
 

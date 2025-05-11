@@ -41,13 +41,14 @@ public partial class MainWindow : Window
     }
 
     private void CriarButton_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e) {
-        if (int.TryParse(NumeroDeProcessosTextBox.Text, out int numeroDeProcessos)) {
-            Console.WriteLine($"Criar {numeroDeProcessos} processos.");
+        if (int.TryParse(NumeroDeProcessosTextBox.Text, out int numeroDeProcessos))
+        {
+            ResulTextBox.Text = $"Criar {numeroDeProcessos} processos.";
 
             for (int i = 0; i < numeroDeProcessos; i++)
             {
                 var processo = new Process(arrivalTime: 0, executionTime: 5);
-                Console.WriteLine($"Processo criado: PID {processo.Pid}");
+                ResulTextBox.Text += $"Processo criado: PID {processo.Pid}";
             }
         }
         else
