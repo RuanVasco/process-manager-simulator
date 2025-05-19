@@ -1,7 +1,5 @@
-namespace ProcessManagerSimulator.Models
-{
-    public class Process(int arrivalTime, int executionTime)
-    {
+namespace ProcessManagerSimulator.Models {
+    public class Process(int arrivalTime, int executionTime) {
         private static int _nextPid = 1;
 
         public int Pid { get; private set; } = _nextPid++;

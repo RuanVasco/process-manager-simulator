@@ -2,32 +2,61 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:ProcessManagerSimulator.Models"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ProcessManagerSimulator.Views.MainWindow"
         Title="ProcessManagerSimulator">
     
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Spacing="10">
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
 
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-            <TextBlock Text="Número de processos:" VerticalAlignment="Center"/>
-            <TextBox Width="100" Name="NumeroDeProcessosTextBox" 
-                     KeyDown="NumeroDeProcessosTextBox_KeyDown"
-                     TextInput="NumeroDeProcessosTextBox_TextInput" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   Text="Número de processos:" VerticalAlignment="Center" Margin="0 0 8 8"/>
+        <TextBox  Grid.Row="0" Grid.Column="1" Width="150" Name="ProcessNumberTextBox"
+                  KeyDown="ProcessNumberTextBox_KeyDown"
+                  TextInput="ProcessNumberTextBox_TextInput" Margin="0 0 0 8"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0"
+                   Text="Quantum:" VerticalAlignment="Center" Margin="0 0 8 8"/>
+        <TextBox  Grid.Row="1" Grid.Column="1" Width="150" Name="QuantumTextBox"
+                  KeyDown="QuantumTextBox_KeyDown"
+                  TextInput="QuantumTextBox_TextInput" Margin="0 0 0 8"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   Text="TTC:" VerticalAlignment="Center" Margin="0 0 8 8"/>
+        <TextBox  Grid.Row="2" Grid.Column="1" Width="150" Name="TtcTextBox"
+                  KeyDown="TtcTextBox_KeyDown"
+                  TextInput="TtcTextBox_TextInput" Margin="0 0 0 8"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0"
+                   Text="Política de escalonamento:" VerticalAlignment="Center" Margin="0 0 8 8"/>
+        <ComboBox Grid.Row="3" Grid.Column="1" Name="AlgorithmComboBox" Width="200" HorizontalAlignment="Left" Margin="0 0 0 8">
+            <ComboBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:ISchedulingAlgorithm}">
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 8">
+            <Button Content="Criar" Width="150" Click="CreateButton_Click"/>
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-            <TextBlock Text="Quantum:" VerticalAlignment="Center"/>
-            <TextBox Width="100" Name="QuantumTextBox" 
-                     KeyDown="QuantumTextBox_KeyDown"
-                     TextInput="QuantumTextBox_TextInput" />
-        </StackPanel>
-
-        <Button Content="Criar" Width="120" HorizontalAlignment="Center" Click="CriarButton_Click"/>
-        <TextBox
-            Name="ResulTextBox"
-            IsReadOnly="True"
-            />
-
-    </StackPanel>
-
+        <TextBox Grid.Row="5" Grid.ColumnSpan="2" Name="ResulTextBox" IsReadOnly="True" 
+                 AcceptsReturn="True" Height="200" 
+                 Margin="0 0 0 0"/>
+    </Grid>
 </Window>
+
