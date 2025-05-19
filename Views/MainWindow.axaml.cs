@@ -93,7 +93,10 @@ public partial class MainWindow : Window {
 		var ready = new LinkedList<Process>(procs);
 
 		while (ready.Any(p => p.RemainingTime > 0)) {
-			var next = alg.SelectNextProcess(ready.ToList(), time);
+			var next = alg.SelectNextProcess(
+				ready.Where(p => p.RemainingTime > 0).ToList(),
+				time
+			);
 
 			if (next == null) {
 				time = ready.Where(p => p.RemainingTime > 0)
@@ -114,6 +117,9 @@ public partial class MainWindow : Window {
 			log.AppendLine($"t={time} → PID {next.Pid} por {slice}");
 
 			next.RemainingTime -= slice;
+
+			if (next.RemainingTime <= 0) ready.Remove(next);
+
 			time += slice;
 
 			if (isRR && next.RemainingTime > 0) {
