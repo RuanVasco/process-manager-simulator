@@ -9,6 +9,6 @@ public class Process(int arrivalTime, int executionTime) {
 	public int RemainingTime { get; set; } = executionTime;
 
 	public override string ToString() {
-		return $"PID: {Pid}, RemainingTime: {RemainingTime}";
+		return $"PID: {Pid}, Tempo restante: {RemainingTime}";
 	}
 }
