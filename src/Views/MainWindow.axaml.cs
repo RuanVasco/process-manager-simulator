@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Avalonia.Controls;
@@ -11,11 +12,12 @@ using ProcessManagerSimulator.Models.SchedulingPolicies;
 namespace ProcessManagerSimulator.Views;
 
 public partial class MainWindow : Window {
-	private static readonly Random _rng = new();
 	private readonly List<ISchedulingAlgorithm> algorithms;
+
 
 	public MainWindow() {
 		InitializeComponent();
+		DataContext = this;
 
 		algorithms = new List<ISchedulingAlgorithm> {
 			new RoundRobinSchedulingPolicy(),
@@ -27,11 +29,13 @@ public partial class MainWindow : Window {
 		AlgorithmComboBox.ItemsSource = algorithms;
 	}
 
-	private void ProcessNumberTextBox_KeyDown(object sender, KeyEventArgs e) {
+	public ObservableCollection<Process> Processes { get; } = new();
+
+	private void IntTextBox_KeyDown(object sender, KeyEventArgs e) {
 		if (NumberInputMaskForInt(e)) e.Handled = true;
 	}
 
-	private void ProcessNumberTextBox_TextInput(object sender, TextInputEventArgs e) {
+	private void IntTextBox_TextInput(object sender, TextInputEventArgs e) {
 		if (!int.TryParse(e.Text, out _)) e.Handled = true;
 	}
 
@@ -43,21 +47,33 @@ public partial class MainWindow : Window {
 		if (!int.TryParse(e.Text, out _)) e.Handled = true;
 	}
 
-	private void TtcTextBox_KeyDown(object sender, KeyEventArgs e) {
-		if (NumberInputMaskForFloat(TtcTextBox, e)) e.Handled = true;
+	private void FloatTextBox_KeyDown(object sender, KeyEventArgs e) {
+		if (!NumberInputMaskForFloat(TtcTextBox, e)) e.Handled = true;
 	}
 
-	private void TtcTextBox_TextInput(object sender, TextInputEventArgs e) {
+	private void FloatTextBox_TextInput(object sender, TextInputEventArgs e) {
 		if (!int.TryParse(e.Text, out _)) e.Handled = true;
 	}
 
-	private void CreateButton_Click(object sender, RoutedEventArgs e) {
-		ResulTextBox.Text = "";
-
-		if (!int.TryParse(ProcessNumberTextBox.Text, out var processNumber) || processNumber <= 0) {
-			ResulTextBox.Text = "Número de processos inválido!\n";
+	private void AddProcessButton_Click(object? sender, RoutedEventArgs e) {
+		if (!int.TryParse(ArrivalTextBox.Text, out var arrival) || arrival < 0 ||
+		    !int.TryParse(ExecTextBox.Text, out var exec) || exec <= 0) {
+			ResulTextBox.Text = "Chegada ou execução inválidos.\n";
 			return;
 		}
+
+		Processes.Add(new Process(arrival, exec));
+		ArrivalTextBox.Text = ExecTextBox.Text = "";
+		ArrivalTextBox.Focus();
+	}
+
+	private void RemoveProcessButton_Click(object? sender, RoutedEventArgs e) {
+		if (sender is Button { DataContext: Process p })
+			Processes.Remove(p);
+	}
+
+	private void SimulateButton_Click(object sender, RoutedEventArgs e) {
+		ResulTextBox.Text = "";
 
 		if (!float.TryParse(TtcTextBox.Text, out var ttc) || ttc <= 0) {
 			ResulTextBox.Text = "TTC inválido!\n";
@@ -72,19 +88,16 @@ public partial class MainWindow : Window {
 			return;
 		}
 
-		// gera os processos
-		var processes = GenerateProcesses(processNumber);
-
 		// executa a simulação passando as opções selecionadas como argumento
-		SimulateExecution(processes, selectedAlgorithm, quantum, ttc);
+		SimulateExecution(selectedAlgorithm, quantum, ttc);
 	}
 
 	private void SimulateExecution(
-		List<Process> procs,
 		ISchedulingAlgorithm alg,
 		int quantum,
 		float ttc
 	) {
+		var procs = Processes;
 		// inicia o tempo como 0
 		var time = 0;
 
@@ -206,23 +219,5 @@ public partial class MainWindow : Window {
 		}
 
 		return true;
-	}
-
-	private List<Process> GenerateProcesses(int count) {
-		// inicia a lista de processos
-		var list = new List<Process>(count);
-
-		for (var i = 0; i < count; i++) {
-			// gera um tempo de chegada aleatório entre 0 e count / 2 (/2 para os processos terem tempo de chegada baixo);
-			var arrival = _rng.Next(0, count / 2);
-
-			// gera um tempo de execução aleatório entre 1 e 11
-			var exec = _rng.Next(1, 11);
-
-			// adiciona a lista de processos
-			list.Add(new Process(arrival, exec));
-		}
-
-		return list;
 	}
 }
