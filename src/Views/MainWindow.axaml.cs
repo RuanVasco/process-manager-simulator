@@ -13,6 +13,7 @@ namespace ProcessManagerSimulator.Views;
 
 public partial class MainWindow : Window {
 	private readonly List<ISchedulingAlgorithm> algorithms;
+	public ObservableCollection<Process> Processes { get; } = new();
 
 
 	public MainWindow() {
@@ -29,7 +30,6 @@ public partial class MainWindow : Window {
 		AlgorithmComboBox.ItemsSource = algorithms;
 	}
 
-	public ObservableCollection<Process> Processes { get; } = new();
 
 	private void IntTextBox_KeyDown(object sender, KeyEventArgs e) {
 		if (NumberInputMaskForInt(e)) e.Handled = true;
@@ -39,20 +39,21 @@ public partial class MainWindow : Window {
 		if (!int.TryParse(e.Text, out _)) e.Handled = true;
 	}
 
-	private void QuantumTextBox_KeyDown(object sender, KeyEventArgs e) {
-		if (NumberInputMaskForInt(e)) e.Handled = true;
-	}
-
-	private void QuantumTextBox_TextInput(object sender, TextInputEventArgs e) {
-		if (!int.TryParse(e.Text, out _)) e.Handled = true;
-	}
-
 	private void FloatTextBox_KeyDown(object sender, KeyEventArgs e) {
-		if (!NumberInputMaskForFloat(TtcTextBox, e)) e.Handled = true;
+		e.Handled = NumberInputMaskForFloat((TextBox)sender, e);
 	}
 
 	private void FloatTextBox_TextInput(object sender, TextInputEventArgs e) {
-		if (!int.TryParse(e.Text, out _)) e.Handled = true;
+		var textBox = (TextBox)sender;
+		var ch      = e.Text;
+
+		if (char.IsDigit(ch, 0))
+			return;
+
+		if ((ch == "." || ch == ",") && !textBox.Text.Contains('.') && !textBox.Text.Contains(','))
+			return;
+
+		e.Handled = true;
 	}
 
 	private void AddProcessButton_Click(object? sender, RoutedEventArgs e) {
@@ -61,8 +62,9 @@ public partial class MainWindow : Window {
 			ResulTextBox.Text = "Chegada ou execução inválidos.\n";
 			return;
 		}
-
-		Processes.Add(new Process(arrival, exec));
+		
+		Process process = new Process(arrival, exec);
+		Processes.Add(process);
 		ArrivalTextBox.Text = ExecTextBox.Text = "";
 		ArrivalTextBox.Focus();
 	}
@@ -114,8 +116,14 @@ public partial class MainWindow : Window {
 
 		// cria uma lista encadeada dos processos para melhorar a busca linear
 		var ready = new LinkedList<Process>(procs);
+		
+		// contador para o log
+		var counter = 0;
 
 		while (ready.Any(p => p.RemainingTime > 0)) {
+			// guardar o tempo de inicio da execução
+			var startTime = time; 
+			
 			// seleciona o próximo processo, passando para a política selecionada a lista com os processos restantes
 			var next = alg.SelectNextProcess(
 				ready.Where(p => p.RemainingTime > 0).ToList(),
@@ -164,7 +172,9 @@ public partial class MainWindow : Window {
 			}
 
 			log.AppendLine(
-				$"t={time} -> PID {next.Pid} por {slice} unidades de tempo");
+				$"{counter} - t={startTime} -> PID {next.Pid} por {slice} unidades de tempo");
+
+			counter++;
 		}
 
 		log.AppendLine($"\nFim em t={time}");

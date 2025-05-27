@@ -4,68 +4,110 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:models="clr-namespace:ProcessManagerSimulator.Models"
         xmlns:views="clr-namespace:ProcessManagerSimulator.Views"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ProcessManagerSimulator.Views.MainWindow"
         x:DataType="views:MainWindow"
+        mc:Ignorable="d"
+        d:DesignWidth="900"
+        d:DesignHeight="600"
         Title="ProcessManagerSimulator">
 
-    <Grid Margin="20" RowDefinitions="Auto,Auto,*">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="Chegada:" VerticalAlignment="Center" />
-            <TextBox Width="60" Name="ArrivalTextBox" KeyDown="IntTextBox_KeyDown"
-                     TextInput="IntTextBox_TextInput" />
+    <Grid Margin="20"
+          RowDefinitions="Auto,*,Auto,*">
 
-            <TextBlock Text="Execução:" VerticalAlignment="Center" />
-            <TextBox Width="60" Name="ExecTextBox" KeyDown="IntTextBox_KeyDown"
-                     TextInput="IntTextBox_TextInput" />
+        <StackPanel Orientation="Horizontal"
+                    Spacing="10"
+                    VerticalAlignment="Center">
 
-            <Button Content="Adicionar" Click="AddProcessButton_Click" Width="90" />
+            <TextBlock Text="Chegada:" VerticalAlignment="Center"/>
+            <TextBox x:Name="ArrivalTextBox"
+                     Width="70"
+                     KeyDown="IntTextBox_KeyDown"
+                     TextInput="IntTextBox_TextInput"/>
+
+            <TextBlock Text="Tempo de Execução:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+            <TextBox x:Name="ExecTextBox"
+                     Width="70"
+                     KeyDown="IntTextBox_KeyDown"
+                     TextInput="IntTextBox_TextInput"/>
+
+            <Button Content="Adicionar"
+                    Width="100"
+                    Click="AddProcessButton_Click"
+                    Margin="10,0,0,0"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Processes}" Name="ProcessGrid"
-                  AutoGenerateColumns="False" Height="200" Margin="0 8 0 8">
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding Processes}"
+                  AutoGenerateColumns="False"
+                  Height="220"
+                  BorderThickness="1"
+                  BorderBrush="Gray"
+                  IsReadOnly="True">
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="PID" Binding="{Binding Pid}" IsReadOnly="True" />
-                <DataGridTextColumn Header="Chegada" Binding="{Binding ArrivalTime}" />
-                <DataGridTextColumn Header="Execução" Binding="{Binding ExecutionTime}" />
-                <DataGridTemplateColumn Header="Ações">
+                <DataGridTextColumn Header="PID"
+                                    Binding="{Binding Pid}"
+                                    Width="60"/>
+
+                <DataGridTextColumn Header="Chegada"
+                                    Binding="{Binding ArrivalTime}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Execução"
+                                    Binding="{Binding ExecutionTime}"
+                                    Width="*"/>
+
+                <DataGridTemplateColumn Header="Ações"
+                                        Width="90">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Remover" Padding="4,0"
-                                    Click="RemoveProcessButton_Click" />
+                            <Button Content="Remover"
+                                    Padding="4,0"
+                                    Click="RemoveProcessButton_Click"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 
-        <Grid Grid.Row="2" ColumnDefinitions="Auto,200" RowDefinitions="Auto,Auto,Auto,Auto,*">
-            <TextBlock Grid.Row="0" Grid.Column="0" Margin="0 0 8 8"
-                       Text="Quantum:" VerticalAlignment="Center" />
-            <TextBox Grid.Row="0" Grid.Column="1" Width="150" Name="QuantumTextBox"
-                     KeyDown="IntTextBox_KeyDown" TextInput="IntTextBox_TextInput" />
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    Spacing="10"
+                    VerticalAlignment="Center">
 
-            <TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 8 8"
-                       Text="TTC:" VerticalAlignment="Center" />
-            <TextBox Grid.Row="1" Grid.Column="1" Width="150" Name="TtcTextBox"
-                     KeyDown="FloatTextBox_KeyDown" TextInput="FloatTextBox_TextInput" />
+            <TextBlock Text="Quantum:" VerticalAlignment="Center"/>
+            <TextBox x:Name="QuantumTextBox"
+                     Width="70"
+                     KeyDown="IntTextBox_KeyDown"
+                     TextInput="IntTextBox_TextInput"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="0" Margin="0 0 8 8"
-                       Text="Política:" VerticalAlignment="Center" />
-            <ComboBox Grid.Row="2" Grid.Column="1" Name="AlgorithmComboBox" Width="200"
-                      HorizontalAlignment="Left" Margin="0 0 0 8">
+            <TextBlock Text="TTC:" VerticalAlignment="Center"/>
+            <TextBox x:Name="TtcTextBox"
+                     Width="70"
+                     KeyDown="FloatTextBox_KeyDown"
+                     TextInput="FloatTextBox_TextInput"/>
+
+            <TextBlock Text="Política:" VerticalAlignment="Center"/>
+            <ComboBox x:Name="AlgorithmComboBox"
+                      Width="220">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="models:ISchedulingAlgorithm">
-                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Name}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
-            <Button Grid.Row="3" Grid.ColumnSpan="2" Content="Simular" Width="150"
-                    HorizontalAlignment="Center" Click="SimulateButton_Click" Margin="0 0 0 8" />
+            <Button Content="Simular"
+                    Width="120"
+                    Click="SimulateButton_Click"
+                    Margin="20,0,0,0"/>
+        </StackPanel>
 
-            <TextBox Grid.Row="4" Grid.ColumnSpan="2" Name="ResulTextBox"
-                     IsReadOnly="True" AcceptsReturn="True" Height="200" />
-        </Grid>
+        <TextBox Grid.Row="3"
+                 x:Name="ResulTextBox"
+                 AcceptsReturn="True"
+                 IsReadOnly="True"
+                 Margin="0  10"
+                 ScrollViewer.IsScrollInertiaEnabled="True"/>
     </Grid>
 </Window>
