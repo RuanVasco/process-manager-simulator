@@ -13,7 +13,6 @@ public class SjfSchedulingPolicy : ISchedulingAlgorithm {
 		return readyQueue
 			.Where(p => p.ArrivalTime <= currentTime)
 			.OrderBy(p => p.ExecutionTime)
-			.ThenBy(p => p.ArrivalTime)
 			.FirstOrDefault();
 	}
 }

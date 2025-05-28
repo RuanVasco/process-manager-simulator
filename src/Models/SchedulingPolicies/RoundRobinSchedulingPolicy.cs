@@ -13,8 +13,6 @@ public class RoundRobinSchedulingPolicy : ISchedulingAlgorithm {
 
 		// retorna o processo com menor tempo de chegada (a lógica do algoritmo fica no código de execução)
 		return readyQueue
-			.Where(p => p.ArrivalTime <= currentTime)
-			.OrderBy(p => p.ArrivalTime)
-			.FirstOrDefault();
+			.FirstOrDefault(p => p.ArrivalTime <= currentTime);
 	}
 }

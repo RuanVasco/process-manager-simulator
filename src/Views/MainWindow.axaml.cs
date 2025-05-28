@@ -13,7 +13,6 @@ namespace ProcessManagerSimulator.Views;
 
 public partial class MainWindow : Window {
 	private readonly List<ISchedulingAlgorithm> algorithms;
-	public ObservableCollection<Process> Processes { get; } = new();
 
 
 	public MainWindow() {
@@ -30,6 +29,8 @@ public partial class MainWindow : Window {
 		AlgorithmComboBox.ItemsSource = algorithms;
 	}
 
+	public ObservableCollection<Process> Processes { get; } = new();
+
 
 	private void IntTextBox_KeyDown(object sender, KeyEventArgs e) {
 		if (NumberInputMaskForInt(e)) e.Handled = true;
@@ -45,7 +46,7 @@ public partial class MainWindow : Window {
 
 	private void FloatTextBox_TextInput(object sender, TextInputEventArgs e) {
 		var textBox = (TextBox)sender;
-		var ch      = e.Text;
+		var ch = e.Text;
 
 		if (char.IsDigit(ch, 0))
 			return;
@@ -62,8 +63,8 @@ public partial class MainWindow : Window {
 			ResulTextBox.Text = "Chegada ou execução inválidos.\n";
 			return;
 		}
-		
-		Process process = new Process(arrival, exec);
+
+		var process = new Process(arrival, exec);
 		Processes.Add(process);
 		ArrivalTextBox.Text = ExecTextBox.Text = "";
 		ArrivalTextBox.Focus();
@@ -99,11 +100,16 @@ public partial class MainWindow : Window {
 		int quantum,
 		float ttc
 	) {
+		// reseta o remainingTime
+		foreach (var p in Processes)
+			p.RemainingTime = p.ExecutionTime;
+
 		var procs = Processes;
+
 		// inicia o tempo como 0
 		var time = 0;
 
-		// boolean pra evitar o tempo de contexto na primeira execução
+		// boolean para evitar o tempo de contexto na primeira execução
 		var firstDispatch = true;
 
 		// pid - tempo da primeira execução (para calcular o tempo de espera) 
@@ -116,27 +122,24 @@ public partial class MainWindow : Window {
 
 		// cria uma lista encadeada dos processos para melhorar a busca linear
 		var ready = new LinkedList<Process>(procs);
-		
-		// contador para o log
-		var counter = 0;
 
 		while (ready.Any(p => p.RemainingTime > 0)) {
-			// guardar o tempo de inicio da execução
-			var startTime = time; 
-			
+			// tempo de início da execução
+			var startTime = time;
+
 			// seleciona o próximo processo, passando para a política selecionada a lista com os processos restantes
 			var next = alg.SelectNextProcess(
 				ready.Where(p => p.RemainingTime > 0).ToList(),
 				time
 			);
 
-			// cpu ociosa, não chegou nenhum processo ainda.
-			// pula para o próximo processo disponível com menor tempo de chegada
+			// cpu ociosa, não chegou nenhum processo ainda
 			// não conta o ttc
 			if (next == null) {
-				time = ready.Where(p => p.RemainingTime > 0)
-					.Min(p => p.ArrivalTime);
+				log.AppendLine($"Tempo {time} sem processo disponível.");
+				time++;
 				firstDispatch = true;
+
 				continue;
 			}
 
@@ -146,11 +149,16 @@ public partial class MainWindow : Window {
 			firstDispatch = false;
 
 			var isRR = alg is RoundRobinSchedulingPolicy;
+			var isPP = alg is SjfPreemptiveSchedulingPolicy;
 
-			// define o tempo de execução do processo, se for roundrobin o tempo máximo é o quantum e o minímo é o tempo de execução restante do processo
+			// define o tempo de execução do processo,
+			// se for roundrobin o tempo máximo é o quantum e o mínimo é o tempo de execução restante do processo
+			// se for sjf preemptivo a execução vai ser 1
 			var slice = isRR
 				? Math.Min(quantum, next.RemainingTime)
-				: next.RemainingTime;
+				: isPP
+					? 1
+					: next.RemainingTime;
 
 			// se for a primeira execução, adiciona ao array o pid e o tempo atual
 			if (!firstExecution.ContainsKey(next.Pid))
@@ -159,25 +167,31 @@ public partial class MainWindow : Window {
 			// subtrai do tempo restante do processo o tempo de execução
 			next.RemainingTime -= slice;
 
-			// se o tempo restante zerar, então remover da lista encadeada
-			if (next.RemainingTime <= 0) ready.Remove(next);
+			// calcula o tempo final da execução do processo
+			time = startTime + slice;
 
-			// soma ao tempo da cpu o tempo de execuçaõ
-			time += slice;
+			// printa os tempos em que o processo está sendo executado
+			for (var t = startTime; t < time; t++) log.AppendLine($"Tempo {t}, Processo {next.Pid}");
 
-			// se for roundrobin e ainda restar tempo de execução, adicionar ao fim da lista encadeada
-			if (isRR && next.RemainingTime > 0) {
+			// se o processo for executado por completo, remove da lista.
+			// se for roundrobin e nao tiver sido executado por completo, coloca no final da lista
+			if (next.RemainingTime <= 0) {
+				ready.Remove(next);
+			}
+			else if (isRR) {
 				ready.Remove(next);
 				ready.AddLast(next);
 			}
-
-			log.AppendLine(
-				$"{counter} - t={startTime} -> PID {next.Pid} por {slice} unidades de tempo");
-
-			counter++;
 		}
 
-		log.AppendLine($"\nFim em t={time}");
+		log.AppendLine("");
+		foreach (var p in procs) {
+			var wait = firstExecution[p.Pid] - p.ArrivalTime;
+			var totalTime = wait + p.ExecutionTime;
+
+			log.AppendLine(
+				$"Tempo total de execução do processo {p.Pid}: {totalTime} unidades de tempo (tempo de espera: {wait}, tempo de execução: {p.ExecutionTime})");
+		}
 
 		// se for fcfs ou sjf (não preemptivo) calcular o tempo médio de espera
 		if (alg.Name == "FCFS" || alg.Name == "SJF") {
@@ -193,7 +207,7 @@ public partial class MainWindow : Window {
 			// calcula a média de tempo de espera (total / número de processos)
 			var averageWaitTime = totalWaitTime / procs.Count;
 
-			log.AppendLine($"Tempo médio de espera: {averageWaitTime:F2} unidades de tempo");
+			log.AppendLine($"\nTempo médio de espera: {averageWaitTime:F2} unidades de tempo");
 		}
 
 		ResulTextBox.Text = log.ToString();

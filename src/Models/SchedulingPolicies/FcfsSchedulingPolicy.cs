@@ -8,6 +8,7 @@ public class FcfsSchedulingPolicy : ISchedulingAlgorithm {
 
 	public Process? SelectNextProcess(List<Process> readyQueue, int currentTime) {
 		// retorna o processo com menor ordem de chegada
+
 		return readyQueue
 			.Where(p => p.ArrivalTime <= currentTime)
 			.OrderBy(p => p.ArrivalTime)
